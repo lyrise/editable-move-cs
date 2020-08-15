@@ -1,9 +1,11 @@
 # VRename
 
+[![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/VRename)](https://www.nuget.org/packages/VRename)
+
 ## Install
 
 ```sh
-dotnet tool install -g VRename --version 0.0.2-alpha.1
+dotnet tool install --global VRename --version 0.0.2alpha.1
 ```
 
 ## Usage
