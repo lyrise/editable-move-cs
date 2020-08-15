@@ -30,7 +30,10 @@ class Program
 
         dirWriter.WriteLine(directory);
 
-        foreach (var path in Directory.EnumerateFiles(directory, "*", new EnumerationOptions { RecurseSubdirectories = true }))
+        var list = Directory.EnumerateFiles(directory, "*", new EnumerationOptions { RecurseSubdirectories = true }).ToList();
+        list.Sort();
+
+        foreach (var path in list)
         {
             var value = path[directory.Length..];
 
@@ -81,8 +84,22 @@ class Program
 
         for (int i = 0; i < oldList.Length; i++)
         {
-            if (oldList[i] == newList[i]) continue;
-            File.Move(Path.Combine(directory, oldList[i]), Path.Combine(directory, newList[i]));
+            var oldPath = oldList[i];
+            var newPath = newList[i];
+
+            if (oldPath == newPath) continue;
+            if (!File.Exists(oldPath)) continue;
+
+            // Sort
+            {
+                var newDir = Path.GetDirectoryName(newPath);
+                if (!Directory.Exists(newDir))
+                {
+                    Directory.CreateDirectory(newDir);
+                }
+            }
+
+            File.Move(Path.Combine(directory, oldPath), Path.Combine(directory, newPath));
         }
     }
 
