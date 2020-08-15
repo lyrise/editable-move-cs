@@ -1,6 +1,6 @@
 # VRename
 
-![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/VRename)
+[![Nuget (with prereleases)](https://img.shields.io/nuget/vpre/VRename)](https://www.nuget.org/packages/VRename)
 
 ## Install
 
