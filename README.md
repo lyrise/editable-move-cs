@@ -5,7 +5,7 @@
 ## Install
 
 ```sh
-dotnet tool install --global VRename --version 0.0.2alpha.1
+dotnet tool install --global VRename
 ```
 
 ## Usage
