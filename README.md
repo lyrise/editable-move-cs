@@ -1,27 +1,33 @@
 # VRename
 
+## Install
+
+```sh
+dotnet tool install -g VRename --version 0.0.1-alpha.1
+```
+
 ## Usage
 
 ### Find
 
 ```cs
-dotnet run --project ./src/VRename/ -- find -d ./ -p "**"
+vrename find -d ./ -p "**"
 ```
 
 ### Run
 
 ```cs
-dotnet run --project ./src/VRename/ -- run
+vrename run
 ```
 
 ### Undo
 
 ```cs
-dotnet run --project ./src/VRename/ -- undo
+vrename undo
 ```
 
 ### Clean
 
 ```cs
-dotnet run --project ./src/VRename/ -- clean
+vrename clean
 ```
