@@ -35,7 +35,7 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageProjectUrl>https://github.com/lyrise/vrename-cs</PackageProjectUrl>
     <RepositoryUrl>https://github.com/lyrise/vrename-cs</RepositoryUrl>
-    <PackageTags>Xeus</PackageTags>
+    <PackageTags>Rename</PackageTags>
     <Copyright>Copyright (c) 2020 Lyrise</Copyright>
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
