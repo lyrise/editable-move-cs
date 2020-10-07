@@ -1,11 +1,11 @@
-# VRename
+# emv
 
-[![Nuget](https://img.shields.io/nuget/v/VRename)](https://www.nuget.org/packages/VRename)
+[![Nuget](https://img.shields.io/nuget/v/emv)](https://www.nuget.org/packages/emv)
 
 ## Install
 
 ```sh
-dotnet tool install --global VRename
+dotnet tool install --global editable-move
 ```
 
 ## Usage
@@ -13,23 +13,23 @@ dotnet tool install --global VRename
 ### Find
 
 ```cs
-vrename find -d ./ -p "**"
+emv find -d ./ -p "**"
 ```
 
 ### Run
 
 ```cs
-vrename run
+emv run
 ```
 
 ### Undo
 
 ```cs
-vrename undo
+emv undo
 ```
 
 ### Clean
 
 ```cs
-vrename clean
+emv clean
 ```

@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>EditableMove</RootNamespace>
+
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>emv</ToolCommandName>
+    <IsPackable>true</IsPackable>
+   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Cocona.Lite" Version="1.5.0" />
+    <PackageReference Include="Glob.cs" Version="5.0.224" />
+    <PackageReference Include="NLog" Version="4.7.4" />
+  </ItemGroup>
+
+</Project>

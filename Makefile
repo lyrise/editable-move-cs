@@ -1,4 +1,4 @@
 dotnet-pack:
-	dotnet pack ./src/VRename
+	dotnet pack ./src/EditableMove
 
 .PHONY: dotnet-pack

@@ -33,8 +33,8 @@
     <FileVersion>$(AssemblyVersion)</FileVersion>
     <Authors>Lyrise</Authors>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/lyrise/vrename-cs</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/lyrise/vrename-cs</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/lyrise/emv-cs</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/lyrise/emv-cs</RepositoryUrl>
     <PackageTags>Rename</PackageTags>
     <Copyright>Copyright (c) 2020 Lyrise</Copyright>
     <RepositoryType>git</RepositoryType>
