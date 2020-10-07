@@ -1,11 +1,11 @@
 # emv
 
-[![Nuget](https://img.shields.io/nuget/v/emv)](https://www.nuget.org/packages/emv)
+[![Nuget](https://img.shields.io/nuget/v/EditableMove)](https://www.nuget.org/packages/EditableMove)
 
 ## Install
 
 ```sh
-dotnet tool install --global editable-move
+dotnet tool install --global EditableMove
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ dotnet tool install --global editable-move
 ### Find
 
 ```cs
-emv find -d ./ -p "**"
+emv find -p "./**/*"
 ```
 
 ### Run
