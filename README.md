@@ -1,4 +1,4 @@
-# emv - 編集可能なファイルとディレクトリの移動
+# emv - Editable file and directory moving operations 
 
 [![Nuget](https://img.shields.io/nuget/v/EditableMove)](https://www.nuget.org/packages/EditableMove)
 
