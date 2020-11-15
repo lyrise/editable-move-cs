@@ -13,95 +13,64 @@ class Program
         CoconaLiteApp.Run<Program>(args);
     }
 
-    public void Find([Option('p')] string? pattern = null)
+    public void Find([Argument] string pattern, [Option('f')] bool fileOnly, [Option('d')] bool directoryOnly)
     {
         var currentDirectory = Directory.GetCurrentDirectory();
 
-        Directory.CreateDirectory(Path.Combine(currentDirectory, WorkingDirectoryName));
-        using var dirWriter = new StreamWriter(Path.Combine(currentDirectory, WorkingDirectoryName, "dir"), false);
-        using var oldWriter = new StreamWriter(Path.Combine(currentDirectory, WorkingDirectoryName, "old"), false);
-        using var newWriter = new StreamWriter(Path.Combine(currentDirectory, WorkingDirectoryName, "new"), false);
-        dirWriter.NewLine = "\n";
-        oldWriter.NewLine = "\n";
-        newWriter.NewLine = "\n";
+        var oldList = new List<string>();
+        var newList = new List<string>();
 
-        dirWriter.WriteLine(currentDirectory);
-
-        var list = Ganss.IO.Glob.Expand(pattern)
-            .Where(n => !n.Attributes.HasFlag(FileAttributes.Directory))
-            .Select(n => n.FullName)
-            .OrderBy(n => n)
-            .ToList();
-
-        foreach (var path in list)
+        foreach (var fileSystemInfo in Ganss.IO.Glob.Expand(pattern))
         {
-            var value = path[(currentDirectory.Length + 1)..];
-            if (value.StartsWith(WorkingDirectoryName + Path.DirectorySeparatorChar)) continue;
+            bool isFile = !fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
+            var relativePath = fileSystemInfo.FullName[(currentDirectory.Length + 1)..];
 
-            oldWriter.WriteLine(value);
-            newWriter.WriteLine(value);
-        }
-    }
-
-    public void Run()
-    {
-        var currentDirectory = Directory.GetCurrentDirectory();
-
-        using var dirReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "dir"));
-        using var oldReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "old"));
-        using var newReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "new"));
-
-        var directory = dirReader.ReadLine() ?? string.Empty;
-        var oldList = oldReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
-        var newList = newReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
-
-        Rename(directory, oldList, newList);
-    }
-
-    public void Undo()
-    {
-        var currentDirectory = Directory.GetCurrentDirectory();
-
-        using var dirReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "dir"));
-        using var oldReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "old"));
-        using var newReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "new"));
-
-        var directory = dirReader.ReadLine() ?? string.Empty;
-        var oldList = oldReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
-        var newList = newReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
-
-        Rename(directory, newList, oldList);
-    }
-
-    private static void Rename(string directory, string[] oldList, string[] newList)
-    {
-        if (directory == string.Empty || !Directory.Exists(directory)) throw new Exception("directory not found");
-        if (oldList.Length != newList.Length) throw new Exception("old and new line count is not equal");
-
-        // Check Conflict
-        {
-            if (newList.Length != new HashSet<string>(newList).Count) throw new Exception("line conflict");
-            if (oldList.Length != new HashSet<string>(oldList).Count) throw new Exception("line conflict");
-        }
-
-        for (int i = 0; i < oldList.Length; i++)
-        {
-            var oldPath = Path.Combine(directory, oldList[i]);
-            var newPath = Path.Combine(directory, newList[i]);
-
-            if (oldPath == newPath) continue;
-            if (!File.Exists(oldPath)) continue;
-
-            // Sort
+            if (isFile)
             {
-                var newDir = Path.GetDirectoryName(newPath);
-                if (!Directory.Exists(newDir))
+                if (relativePath.StartsWith(WorkingDirectoryName + Path.DirectorySeparatorChar)) continue;
+
+                // "-d" が指定されているのみの場合は、ファイルは対象外にする
+                if (!fileOnly && directoryOnly)
                 {
-                    Directory.CreateDirectory(newDir);
+                    continue;
+                }
+            }
+            else
+            {
+                if (relativePath.StartsWith(WorkingDirectoryName)) continue;
+
+                // "-d" が指定されていない場合は、ディレクトリは対象外にする
+                if (!directoryOnly)
+                {
+                    continue;
                 }
             }
 
-            File.Move(oldPath, newPath);
+            if (fileSystemInfo.FullName == currentDirectory) continue;
+
+            oldList.Add(relativePath);
+            newList.Add(relativePath);
+        }
+
+        oldList.Sort();
+        newList.Sort();
+
+        this.SaveConfig(new Config() { OldPathList = oldList.ToArray(), NewPathList = newList.ToArray() });
+    }
+
+    public void Move([Option('u')] bool undo)
+    {
+        var currentDirectory = Directory.GetCurrentDirectory();
+
+        var config = this.LoadConfig();
+
+        if (!undo)
+        {
+            this.Rename(currentDirectory, config?.OldPathList ?? Array.Empty<string>(), config?.NewPathList ?? Array.Empty<string>());
+        }
+        else
+        {
+            this.Rename(currentDirectory, config?.NewPathList ?? Array.Empty<string>(), config?.OldPathList ?? Array.Empty<string>());
         }
     }
 
@@ -110,4 +79,102 @@ class Program
         var currentDirectory = Directory.GetCurrentDirectory();
         Directory.Delete(Path.Combine(currentDirectory, WorkingDirectoryName), true);
     }
+
+    private record Config
+    {
+        public string[]? OldPathList;
+        public string[]? NewPathList;
+    }
+
+    private Config LoadConfig()
+    {
+        var currentDirectory = Directory.GetCurrentDirectory();
+
+        using var oldReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "old"));
+        using var newReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "new"));
+
+        var oldPathList = oldReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
+        var newPathList = newReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
+
+        return new Config() { OldPathList = oldPathList, NewPathList = newPathList };
+    }
+
+    private void SaveConfig(Config config)
+    {
+        var currentDirectory = Directory.GetCurrentDirectory();
+
+        Directory.CreateDirectory(Path.Combine(currentDirectory, WorkingDirectoryName));
+
+        using var oldWriter = new StreamWriter(Path.Combine(currentDirectory, WorkingDirectoryName, "old"), false);
+        using var newWriter = new StreamWriter(Path.Combine(currentDirectory, WorkingDirectoryName, "new"), false);
+        oldWriter.NewLine = "\n";
+        newWriter.NewLine = "\n";
+
+        foreach (var path in config?.OldPathList ?? Array.Empty<string>())
+        {
+            oldWriter.WriteLine(path);
+        }
+
+        foreach (var path in config?.NewPathList ?? Array.Empty<string>())
+        {
+            newWriter.WriteLine(path);
+        }
+    }
+
+    private void Rename(string directory, string[] oldList, string[] newList)
+    {
+        if (directory == string.Empty || !Directory.Exists(directory)) throw new EditableMoveException("directory is not found");
+        if (oldList.Length != newList.Length) throw new EditableMoveException("old and new line count is not equal");
+
+        this.ValidateDuplicate(oldList);
+        this.ValidateDuplicate(newList);
+
+        for (int i = 0; i < oldList.Length; i++)
+        {
+            var oldPath = Path.Combine(directory, oldList[i]);
+            var newPath = Path.Combine(directory, newList[i]);
+
+            if (oldPath == newPath) continue;
+
+            if (File.Exists(oldPath))
+            {
+                var newDir = Path.GetDirectoryName(newPath);
+                if (!Directory.Exists(newDir))
+                {
+                    Directory.CreateDirectory(newDir);
+                }
+
+                File.Move(oldPath, newPath);
+            }
+            else if (Directory.Exists(oldPath))
+            {
+                var newDir = Path.GetDirectoryName(newPath);
+                if (!Directory.Exists(newDir))
+                {
+                    Directory.CreateDirectory(newDir);
+                }
+
+                Directory.Move(oldPath, newPath);
+            }
+        }
+    }
+
+    private void ValidateDuplicate(string[] pathList)
+    {
+        var hastSet = new HashSet<string>();
+
+        foreach (var p in pathList)
+        {
+            if (!hastSet.Add(p)) throw new EditableMoveException($"Duplicate paths ({p})");
+        }
+    }
+}
+
+[System.Serializable]
+public class EditableMoveException : System.Exception
+{
+    public EditableMoveException() { }
+    public EditableMoveException(string message) : base(message) { }
+    public EditableMoveException(string message, System.Exception inner) : base(message, inner) { }
+    protected EditableMoveException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
 }
