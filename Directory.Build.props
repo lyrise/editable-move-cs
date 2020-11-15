@@ -18,8 +18,8 @@
     <Title>$(ProjectName)</Title>
     <Description>$(ProjectName)</Description>
     <BuildVersion>1</BuildVersion>
-    <VersionPrefix>0.0.1</VersionPrefix>
-    <VersionSuffix>-alpha</VersionSuffix>
+    <VersionPrefix>0.0.4</VersionPrefix>
+    <VersionSuffix></VersionSuffix>
     <Version>$(VersionPrefix)$(VersionSuffix).$(BuildVersion)</Version>
     <AssemblyVersion>$(VersionPrefix).$(BuildVersion)</AssemblyVersion>
     <FileVersion>$(AssemblyVersion)</FileVersion>
