@@ -23,9 +23,12 @@ class Program
         foreach (var fileSystemInfo in Ganss.IO.Glob.Expand(pattern))
         {
             bool isFile = !fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
+            var relativePath = fileSystemInfo.FullName[(currentDirectory.Length + 1)..];
 
             if (isFile)
             {
+                if (relativePath.StartsWith(WorkingDirectoryName + Path.DirectorySeparatorChar)) continue;
+
                 // "-d" が指定されているのみの場合は、ファイルは対象外にする
                 if (!fileOnly && directoryOnly)
                 {
@@ -34,6 +37,8 @@ class Program
             }
             else
             {
+                if (relativePath.StartsWith(WorkingDirectoryName)) continue;
+
                 // "-d" が指定されていない場合は、ディレクトリは対象外にする
                 if (!directoryOnly)
                 {
@@ -41,11 +46,10 @@ class Program
                 }
             }
 
-            var value = fileSystemInfo.FullName[(currentDirectory.Length + 1)..];
-            if (value.StartsWith(WorkingDirectoryName + Path.DirectorySeparatorChar)) continue;
+            if (fileSystemInfo.FullName == currentDirectory) continue;
 
-            oldList.Add(value);
-            newList.Add(value);
+            oldList.Add(relativePath);
+            newList.Add(relativePath);
         }
 
         oldList.Sort();
@@ -54,22 +58,20 @@ class Program
         this.SaveConfig(new Config() { OldPathList = oldList.ToArray(), NewPathList = newList.ToArray() });
     }
 
-    public void Run()
+    public void Move([Option('u')] bool undo)
     {
         var currentDirectory = Directory.GetCurrentDirectory();
 
         var config = this.LoadConfig();
 
-        this.Rename(currentDirectory, config?.OldPathList ?? Array.Empty<string>(), config?.NewPathList ?? Array.Empty<string>());
-    }
-
-    public void Undo()
-    {
-        var currentDirectory = Directory.GetCurrentDirectory();
-
-        var config = this.LoadConfig();
-
-        this.Rename(currentDirectory, config?.NewPathList ?? Array.Empty<string>(), config?.OldPathList ?? Array.Empty<string>());
+        if (!undo)
+        {
+            this.Rename(currentDirectory, config?.OldPathList ?? Array.Empty<string>(), config?.NewPathList ?? Array.Empty<string>());
+        }
+        else
+        {
+            this.Rename(currentDirectory, config?.NewPathList ?? Array.Empty<string>(), config?.OldPathList ?? Array.Empty<string>());
+        }
     }
 
     public void Clean()
@@ -115,7 +117,7 @@ class Program
 
         foreach (var path in config?.NewPathList ?? Array.Empty<string>())
         {
-            oldWriter.WriteLine(path);
+            newWriter.WriteLine(path);
         }
     }
 
