@@ -1,4 +1,4 @@
-# emv
+# emv - 編集可能なファイルとディレクトリの移動
 
 [![Nuget](https://img.shields.io/nuget/v/EditableMove)](https://www.nuget.org/packages/EditableMove)
 
@@ -10,25 +10,38 @@ dotnet tool install --global EditableMove
 
 ## Usage
 
-### Find
+### Find files or directories
 
-```cs
-emv find -p "./**/*"
+```sh
+# file only
+emv find "./**/*"
+
+# directory only
+emv find -d "./**/*"
+
+# file and directory
+emv find -fd "./**/*"
 ```
 
-### Run
+### Edit the path or name of finded files or directories
 
-```cs
-emv run
+```sh
+nano ./.emv/new
 ```
 
-### Undo
+### Execute files or directories move
 
 ```cs
-emv undo
+emv move
 ```
 
-### Clean
+### Undo files or directories move
+
+```cs
+emv move -u
+```
+
+### Delete working directory
 
 ```cs
 emv clean
