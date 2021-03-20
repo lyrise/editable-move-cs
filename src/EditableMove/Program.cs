@@ -13,7 +13,7 @@ class Program
         CoconaLiteApp.Run<Program>(args);
     }
 
-    public void Find([Argument] string pattern, [Option('f')] bool fileOnly, [Option('d')] bool directoryOnly)
+    public void Find([Argument] string pattern = "./**/*", [Option('f')] bool containFile = true, [Option('d')] bool containDirectory = false)
     {
         var currentDirectory = Directory.GetCurrentDirectory();
 
@@ -30,7 +30,7 @@ class Program
                 if (relativePath.StartsWith(WorkingDirectoryName + Path.DirectorySeparatorChar)) continue;
 
                 // "-d" が指定されているのみの場合は、ファイルは対象外にする
-                if (!fileOnly && directoryOnly)
+                if (!containFile && containDirectory)
                 {
                     continue;
                 }
@@ -40,7 +40,7 @@ class Program
                 if (relativePath.StartsWith(WorkingDirectoryName)) continue;
 
                 // "-d" が指定されていない場合は、ディレクトリは対象外にする
-                if (!directoryOnly)
+                if (!containDirectory)
                 {
                     continue;
                 }
