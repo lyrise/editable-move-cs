@@ -1,7 +1,4 @@
-﻿using System.Linq;
-using System.IO;
-using System;
-using System.Collections.Generic;
+﻿using System.Runtime.Serialization;
 using Cocona;
 
 class Program
@@ -13,43 +10,37 @@ class Program
         CoconaLiteApp.Run<Program>(args);
     }
 
-    public void Find([Argument] string pattern = "./**/*", [Option('f')] bool containFile = true, [Option('d')] bool containDirectory = false)
+    public void Find([Option('d')] bool containDirectory = false, [Option('f')] bool containFile = true, [Option('r')] int maxRecursionDepth = int.MaxValue)
     {
-        var currentDirectory = Directory.GetCurrentDirectory();
+        var currentDir = Directory.GetCurrentDirectory();
 
         var oldList = new List<string>();
         var newList = new List<string>();
 
-        foreach (var fileSystemInfo in Ganss.IO.Glob.Expand(pattern))
+        var enumerationOptions = new EnumerationOptions() { RecurseSubdirectories = true, MaxRecursionDepth = maxRecursionDepth };
+
+        if (containDirectory)
         {
-            bool isFile = !fileSystemInfo.Attributes.HasFlag(FileAttributes.Directory);
-            var relativePath = fileSystemInfo.FullName[(currentDirectory.Length + 1)..];
-
-            if (isFile)
+            foreach (var dir in Directory.EnumerateDirectories(currentDir, "*", enumerationOptions))
             {
-                if (relativePath.StartsWith(WorkingDirectoryName + Path.DirectorySeparatorChar)) continue;
-
-                // "-d" が指定されているのみの場合は、ファイルは対象外にする
-                if (!containFile && containDirectory)
-                {
-                    continue;
-                }
-            }
-            else
-            {
+                var relativePath = dir[(currentDir.Length + 1)..];
                 if (relativePath.StartsWith(WorkingDirectoryName)) continue;
 
-                // "-d" が指定されていない場合は、ディレクトリは対象外にする
-                if (!containDirectory)
-                {
-                    continue;
-                }
+                oldList.Add(relativePath);
+                newList.Add(relativePath);
             }
+        }
 
-            if (fileSystemInfo.FullName == currentDirectory) continue;
+        if (containFile)
+        {
+            foreach (var dir in Directory.EnumerateFiles(currentDir, "*", enumerationOptions))
+            {
+                var relativePath = dir[(currentDir.Length + 1)..];
+                if (relativePath.StartsWith(WorkingDirectoryName + Path.DirectorySeparatorChar)) continue;
 
-            oldList.Add(relativePath);
-            newList.Add(relativePath);
+                oldList.Add(relativePath);
+                newList.Add(relativePath);
+            }
         }
 
         oldList.Sort();
@@ -60,24 +51,24 @@ class Program
 
     public void Move([Option('u')] bool undo)
     {
-        var currentDirectory = Directory.GetCurrentDirectory();
+        var currentDir = Directory.GetCurrentDirectory();
 
         var config = this.LoadConfig();
 
         if (!undo)
         {
-            this.Rename(currentDirectory, config?.OldPathList ?? Array.Empty<string>(), config?.NewPathList ?? Array.Empty<string>());
+            this.Rename(currentDir, config?.OldPathList ?? Array.Empty<string>(), config?.NewPathList ?? Array.Empty<string>());
         }
         else
         {
-            this.Rename(currentDirectory, config?.NewPathList ?? Array.Empty<string>(), config?.OldPathList ?? Array.Empty<string>());
+            this.Rename(currentDir, config?.NewPathList ?? Array.Empty<string>(), config?.OldPathList ?? Array.Empty<string>());
         }
     }
 
     public void Clean()
     {
-        var currentDirectory = Directory.GetCurrentDirectory();
-        Directory.Delete(Path.Combine(currentDirectory, WorkingDirectoryName), true);
+        var currentDir = Directory.GetCurrentDirectory();
+        Directory.Delete(Path.Combine(currentDir, WorkingDirectoryName), true);
     }
 
     private record Config
@@ -88,10 +79,10 @@ class Program
 
     private Config LoadConfig()
     {
-        var currentDirectory = Directory.GetCurrentDirectory();
+        var currentDir = Directory.GetCurrentDirectory();
 
-        using var oldReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "old"));
-        using var newReader = new StreamReader(Path.Combine(currentDirectory, WorkingDirectoryName, "new"));
+        using var oldReader = new StreamReader(Path.Combine(currentDir, WorkingDirectoryName, "old"));
+        using var newReader = new StreamReader(Path.Combine(currentDir, WorkingDirectoryName, "new"));
 
         var oldPathList = oldReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
         var newPathList = newReader.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries).ToArray();
@@ -101,12 +92,12 @@ class Program
 
     private void SaveConfig(Config config)
     {
-        var currentDirectory = Directory.GetCurrentDirectory();
+        var currentDir = Directory.GetCurrentDirectory();
 
-        Directory.CreateDirectory(Path.Combine(currentDirectory, WorkingDirectoryName));
+        Directory.CreateDirectory(Path.Combine(currentDir, WorkingDirectoryName));
 
-        using var oldWriter = new StreamWriter(Path.Combine(currentDirectory, WorkingDirectoryName, "old"), false);
-        using var newWriter = new StreamWriter(Path.Combine(currentDirectory, WorkingDirectoryName, "new"), false);
+        using var oldWriter = new StreamWriter(Path.Combine(currentDir, WorkingDirectoryName, "old"), false);
+        using var newWriter = new StreamWriter(Path.Combine(currentDir, WorkingDirectoryName, "new"), false);
         oldWriter.NewLine = "\n";
         newWriter.NewLine = "\n";
 
@@ -139,7 +130,7 @@ class Program
             if (File.Exists(oldPath))
             {
                 var newDir = Path.GetDirectoryName(newPath);
-                if (!Directory.Exists(newDir))
+                if (newDir is not null && !Directory.Exists(newDir))
                 {
                     Directory.CreateDirectory(newDir);
                 }
@@ -149,7 +140,7 @@ class Program
             else if (Directory.Exists(oldPath))
             {
                 var newDir = Path.GetDirectoryName(newPath);
-                if (!Directory.Exists(newDir))
+                if (newDir is not null && !Directory.Exists(newDir))
                 {
                     Directory.CreateDirectory(newDir);
                 }
@@ -170,11 +161,11 @@ class Program
     }
 }
 
-[System.Serializable]
-public class EditableMoveException : System.Exception
+[Serializable]
+public class EditableMoveException : Exception
 {
     public EditableMoveException() { }
     public EditableMoveException(string message) : base(message) { }
-    public EditableMoveException(string message, System.Exception inner) : base(message, inner) { }
-    protected EditableMoveException(System.Runtime.Serialization.SerializationInfo info, System.Runtime.Serialization.StreamingContext context) : base(info, context) { }
+    public EditableMoveException(string message, Exception inner) : base(message, inner) { }
+    protected EditableMoveException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 }

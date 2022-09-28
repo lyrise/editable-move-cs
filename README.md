@@ -1,4 +1,4 @@
-# emv - Editable file and directory moving operations 
+# emv - Editable file and directory moving operations
 
 [![Nuget](https://img.shields.io/nuget/v/EditableMove)](https://www.nuget.org/packages/EditableMove)
 
@@ -13,20 +13,17 @@ dotnet tool install --global EditableMove
 ### Find files or directories
 
 ```sh
-# file only
-emv find "./**/*"
+# directory only (depth: 1)
+emv find -d -r 1
 
-# directory only
-emv find -d "./**/*"
-
-# file and directory
-emv find -fd "./**/*"
+# file and directory (depth: 2)
+emv find -fd -r 2
 ```
 
 ### Edit the path or name of finded files or directories
 
 ```sh
-nano ./.emv/new
+vim .emv/new
 ```
 
 ### Execute files or directories move

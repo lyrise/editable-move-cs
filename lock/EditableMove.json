@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net6.0": {
+      "Cocona.Lite": {
+        "type": "Direct",
+        "requested": "[1.5.0, )",
+        "resolved": "1.5.0",
+        "contentHash": "W/FxjVLJ7Ur1XLA8Gg5r8XKRhlrI3MeLz8+LSGobjdhrtEF7D7nDG2kAejSBWTII2DUUAZl/RsxbqizoihRSZw==",
+        "dependencies": {
+          "Cocona.Core": "1.5.0"
+        }
+      },
+      "NLog": {
+        "type": "Direct",
+        "requested": "[4.7.4, )",
+        "resolved": "4.7.4",
+        "contentHash": "gSGX/ur0P3jp17H37HW7ycXR6L1578tQbilf4HLX1t2viCDFgtwEsfHMPf0/jcuf7/qqGgoU/vKgyQ9hzxuOEQ=="
+      },
+      "Cocona.Core": {
+        "type": "Transitive",
+        "resolved": "1.5.0",
+        "contentHash": "CjyFYwswh2GP4R0skbrnJQC2hdhL1fyr6ACRoMa/xaj+exZxYdjXuet6q0YNqFiU4j87bkiV+6guROH7M7btsw==",
+        "dependencies": {
+          "System.ComponentModel.Annotations": "4.7.0",
+          "System.Threading.Tasks.Extensions": "4.5.3"
+        }
+      },
+      "System.ComponentModel.Annotations": {
+        "type": "Transitive",
+        "resolved": "4.7.0",
+        "contentHash": "0YFqjhp/mYkDGpU0Ye1GjE53HMp9UVfGN7seGpAMttAC0C40v5gw598jCgpbBLMmCo0E5YRLBv5Z2doypO49ZQ=="
+      },
+      "System.Threading.Tasks.Extensions": {
+        "type": "Transitive",
+        "resolved": "4.5.3",
+        "contentHash": "+MvhNtcvIbqmhANyKu91jQnvIRVSTiaOiFNfKWwXGHG48YAb4I/TyH8spsySiPYla7gKal5ZnF3teJqZAximyQ=="
+      }
+    }
+  }
+}
